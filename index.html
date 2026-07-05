@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guía Final · Contabilidad Chile 2026</title>
+<style>
+  :root{
+    --bg:#0f1720;
+    --panel:#16212e;
+    --panel2:#1d2b3a;
+    --ink:#e8eef5;
+    --muted:#9db0c4;
+    --line:#2a3b4f;
+    /* Colores semánticos contables */
+    --debe:#38bdf8;      /* azul = Debe / Activo */
+    --haber:#f472b6;     /* rosa = Haber / Pasivo */
+    --activo:#34d399;    /* verde = Activo */
+    --pasivo:#fbbf24;    /* ámbar = Pasivo / obligaciones */
+    --resultado:#a78bfa; /* violeta = Resultado */
+    --iva:#f87171;       /* rojo = impuestos */
+    --ok:#22c55e;
+    --warn:#f59e0b;
+    --shadow:0 10px 30px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;font-family:"Segoe UI",system-ui,-apple-system,sans-serif;
+    background:radial-gradient(1200px 700px at 80% -10%,#1c2b3d 0%,var(--bg) 55%);
+    color:var(--ink);line-height:1.65;
+  }
+  header.hero{
+    padding:64px 22px 46px;text-align:center;position:relative;overflow:hidden;
+  }
+  .hero h1{font-size:clamp(1.8rem,4vw,3rem);margin:0 0 10px;letter-spacing:.5px}
+  .hero p{color:var(--muted);max-width:720px;margin:6px auto;font-size:1.05rem}
+  .badge{display:inline-block;margin-top:16px;padding:7px 16px;border:1px solid var(--line);
+    border-radius:999px;background:var(--panel);color:var(--activo);font-weight:600;font-size:.85rem}
+
+  /* NAV / progreso */
+  nav.toc{position:sticky;top:0;z-index:50;background:rgba(15,23,32,.9);
+    backdrop-filter:blur(10px);border-bottom:1px solid var(--line);
+    display:flex;gap:6px;overflow-x:auto;padding:10px 14px;scrollbar-width:thin}
+  nav.toc a{white-space:nowrap;color:var(--muted);text-decoration:none;padding:8px 12px;
+    border-radius:8px;font-size:.85rem;font-weight:600;transition:.2s}
+  nav.toc a:hover,nav.toc a.active{background:var(--panel2);color:var(--ink)}
+
+  main{max-width:1000px;margin:0 auto;padding:26px 18px 90px}
+
+  section{margin:44px 0;opacity:0;transform:translateY(24px);
+    transition:opacity .7s ease,transform .7s ease}
+  section.show{opacity:1;transform:none}
+
+  .kicker{color:var(--activo);font-weight:700;letter-spacing:2px;font-size:.72rem;text-transform:uppercase}
+  h2{font-size:clamp(1.4rem,3vw,2rem);margin:.15em 0 .5em;line-height:1.2}
+  h3{font-size:1.15rem;margin:1.6em 0 .4em;color:#cfe0f2}
+  p{color:#d5e1ee}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;
+    padding:22px 22px;box-shadow:var(--shadow);margin:18px 0}
+  .spine{border-left:4px solid var(--activo);background:linear-gradient(90deg,rgba(52,211,153,.08),transparent);
+    padding:16px 18px;border-radius:0 12px 12px 0;margin:20px 0}
+  .spine .t{color:var(--activo);font-weight:700;font-size:.8rem;letter-spacing:1px;text-transform:uppercase}
+
+  .grid{display:grid;gap:14px}
+  @media(min-width:720px){.grid.c2{grid-template-columns:1fr 1fr}.grid.c3{grid-template-columns:1fr 1fr 1fr}}
+
+  table{width:100%;border-collapse:collapse;font-size:.9rem;margin:12px 0;overflow:hidden;border-radius:10px}
+  th,td{padding:9px 11px;text-align:right;border-bottom:1px solid var(--line)}
+  th:first-child,td:first-child{text-align:left}
+  thead th{background:var(--panel2);color:#cfe0f2;font-weight:700;text-align:right}
+  thead th:first-child{text-align:left}
+  tbody tr:hover{background:rgba(255,255,255,.03)}
+  .debe{color:var(--debe);font-variant-numeric:tabular-nums}
+  .haber{color:var(--haber);font-variant-numeric:tabular-nums}
+  .num{font-variant-numeric:tabular-nums}
+  tfoot td{font-weight:700;border-top:2px solid var(--line);background:rgba(255,255,255,.02)}
+
+  .pill{display:inline-block;padding:2px 9px;border-radius:6px;font-size:.75rem;font-weight:700}
+  .p-debe{background:rgba(56,189,248,.15);color:var(--debe)}
+  .p-haber{background:rgba(244,114,182,.15);color:var(--haber)}
+  .p-activo{background:rgba(52,211,153,.15);color:var(--activo)}
+  .p-pasivo{background:rgba(251,191,36,.15);color:var(--pasivo)}
+  .p-res{background:rgba(167,139,250,.15);color:var(--resultado)}
+  .p-iva{background:rgba(248,113,113,.15);color:var(--iva)}
+
+  .def{border:1px dashed var(--line);border-radius:10px;padding:12px 14px;margin:10px 0;
+    background:rgba(255,255,255,.02)}
+  .def b{color:var(--activo)}
+
+  details{border:1px solid var(--line);border-radius:12px;margin:12px 0;background:var(--panel2);overflow:hidden}
+  details>summary{cursor:pointer;padding:14px 18px;font-weight:700;list-style:none;
+    display:flex;justify-content:space-between;align-items:center;color:#dbe7f4}
+  details>summary::-webkit-details-marker{display:none}
+  details>summary::after{content:"＋";color:var(--activo);font-size:1.2rem;transition:.3s}
+  details[open]>summary::after{transform:rotate(45deg)}
+  details .body{padding:0 18px 18px;animation:fade .4s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(-6px)}to{opacity:1}}
+
+  .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:16px 0}
+  .flow .step{background:var(--panel2);border:1px solid var(--line);border-radius:10px;
+    padding:10px 14px;font-weight:600;font-size:.85rem;flex:1;min-width:130px;text-align:center;
+    transition:.3s;cursor:default}
+  .flow .step:hover{border-color:var(--activo);transform:translateY(-3px);box-shadow:var(--shadow)}
+  .flow .arrow{color:var(--activo);font-size:1.3rem;font-weight:700}
+
+  .callout{border-radius:12px;padding:14px 16px;margin:14px 0;font-size:.92rem}
+  .c-info{background:rgba(56,189,248,.08);border-left:4px solid var(--debe)}
+  .c-warn{background:rgba(245,158,11,.08);border-left:4px solid var(--warn)}
+  .c-ok{background:rgba(34,197,94,.08);border-left:4px solid var(--ok)}
+
+  .tag2026{background:var(--iva);color:#fff;font-size:.68rem;font-weight:800;padding:2px 8px;
+    border-radius:5px;vertical-align:middle;letter-spacing:.5px}
+
+  .quiz{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:16px;margin:12px 0}
+  .quiz .q{font-weight:700;margin-bottom:10px}
+  .quiz button{display:block;width:100%;text-align:left;background:var(--panel);color:var(--ink);
+    border:1px solid var(--line);border-radius:9px;padding:10px 14px;margin:6px 0;cursor:pointer;
+    font-size:.9rem;transition:.15s}
+  .quiz button:hover{border-color:var(--activo)}
+  .quiz button.correct{background:rgba(34,197,94,.2);border-color:var(--ok)}
+  .quiz button.wrong{background:rgba(248,113,113,.2);border-color:var(--iva)}
+  .quiz .fb{margin-top:8px;font-size:.85rem;color:var(--muted);min-height:1em}
+
+  .kpi{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
+  .kpi .k{flex:1;min-width:120px;background:var(--panel2);border:1px solid var(--line);
+    border-radius:12px;padding:14px;text-align:center}
+  .kpi .k b{display:block;font-size:1.5rem;color:var(--activo)}
+  .kpi .k span{font-size:.75rem;color:var(--muted)}
+
+  footer{text-align:center;color:var(--muted);padding:40px 20px;border-top:1px solid var(--line);font-size:.85rem}
+  .prog{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--debe),var(--activo));
+    width:0;z-index:99;transition:width .1s}
+  mark{background:rgba(52,211,153,.25);color:#eafff5;padding:1px 4px;border-radius:4px}
+</style>
+</head>
+<body>
+<div class="prog" id="prog"></div>
+
+<header class="hero">
+  <div class="kicker">Examen final acumulativo</div>
+  <h1>Contabilidad chilena, de punta a punta</h1>
+  <p>Del documento mercantil a los Estados Financieros: una sola historia contable contada en orden, con normativa y tasas <b>vigentes 2026</b>.</p>
+  <div class="badge">🇨🇱 Datos SII actualizados · IVA 19% · Retención 15,25% · PPM Pro Pyme 0,125%</div>
+</header>
+
+<nav class="toc" id="toc">
+  <a href="#eje">🧵 Hilo conductor</a>
+  <a href="#aux">📚 Libros auxiliares</a>
+  <a href="#diario">📔 Libro diario</a>
+  <a href="#mayor">📖 Libro mayor</a>
+  <a href="#balance">🧮 Balance 8 columnas</a>
+  <a href="#ajustes">🔧 Ajustes</a>
+  <a href="#eeff">📊 Estados financieros</a>
+  <a href="#caso">🎯 Caso integrado</a>
+  <a href="#quiz">✅ Autoevaluación</a>
+</nav>
+
+<main>
+
+<!-- ================= HILO CONDUCTOR ================= -->
+<section id="eje">
+  <div class="kicker">Columna vertebral</div>
+  <h2>🧵 El hilo conductor: un solo flujo de información</h2>
+  <p>La contabilidad no son temas sueltos: es <mark>un sistema de información</mark> que toma cada hecho económico y lo transforma, paso a paso, hasta llegar a los Estados Financieros que permiten <b>tomar decisiones</b> y <b>cumplir con el SII</b>. Todo lo que estudiarás para el examen es una estación de este mismo tren.</p>
+
+  <div class="flow">
+    <div class="step">📄 Documento mercantil<br><small>(factura, boleta)</small></div>
+    <div class="arrow">→</div>
+    <div class="step">📚 Libros auxiliares</div>
+    <div class="arrow">→</div>
+    <div class="step">📔 Libro diario</div>
+    <div class="arrow">→</div>
+    <div class="step">📖 Libro mayor</div>
+  </div>
+  <div class="flow">
+    <div class="step">🧮 Balance de comprobación y saldos</div>
+    <div class="arrow">→</div>
+    <div class="step">🔧 Ajustes contables</div>
+    <div class="arrow">→</div>
+    <div class="step">🧮 Balance 8 columnas</div>
+    <div class="arrow">→</div>
+    <div class="step">📊 Estados financieros</div>
+  </div>
+
+  <div class="spine">
+    <div class="t">🇨🇱 Contexto chileno</div>
+    En Chile este sistema opera bajo las <b>NIIF/IFRS</b> (adoptadas plenamente para la información financiera) y bajo la <b>Ley sobre Impuesto a la Renta (LIR)</b> y la <b>Ley del IVA (DL 825)</b> para lo tributario. El <b>Servicio de Impuestos Internos (SII)</b> es el fiscalizador: exige que los hechos económicos queden registrados y que los impuestos se declaren en el <b>Formulario 29 (F29) mensual</b> y el <b>Formulario 22 (F22) anual</b>.
+  </div>
+
+  <div class="callout c-info">
+    <b>La regla de oro que atraviesa todo el examen — la partida doble:</b> en cada registro, la suma del <span class="pill p-debe">DEBE</span> es siempre igual a la suma del <span class="pill p-haber">HABER</span>. Si no cuadra, hay error. Esta igualdad nace de la ecuación patrimonial: <b>Activo = Pasivo + Patrimonio</b>.
+  </div>
+</section>
+
+<!-- ================= LIBROS AUXILIARES ================= -->
+<section id="aux">
+  <div class="kicker">Estación 1</div>
+  <h2>📚 Libros auxiliares</h2>
+  <p>Son registros <b>detallados y especializados</b> que capturan la información de los documentos mercantiles <i>antes</i> de resumirla en el libro diario. Su función es <mark>ordenar por tipo de operación</mark> y servir de respaldo ante el SII.</p>
+
+  <div class="grid c2">
+    <div class="def"><b>Libro de Compras</b><br>Registra todas las <b>facturas de proveedores</b>. De aquí sale el <span class="pill p-iva">IVA Crédito Fiscal</span> (el IVA que la empresa pagó y puede recuperar).</div>
+    <div class="def"><b>Libro de Ventas</b><br>Registra todas las <b>facturas y boletas emitidas</b>. De aquí sale el <span class="pill p-iva">IVA Débito Fiscal</span> (el IVA que la empresa cobró y debe enterar al SII).</div>
+    <div class="def"><b>Libro de Retenciones</b><br>Registra las <b>boletas de honorarios</b> recibidas y la retención de 2ª categoría aplicada. <span class="tag2026">2026: 15,25%</span></div>
+    <div class="def"><b>Libro de Caja y Libro de Bancos</b><br>Controlan el <b>efectivo</b> y los <b>movimientos de la cuenta corriente</b> respectivamente, permitiendo la conciliación bancaria.</div>
+  </div>
+
+  <div class="spine">
+    <div class="t">🇨🇱 Contexto chileno</div>
+    En Chile los libros de compras y ventas hoy son mayoritariamente <b>electrónicos</b>: el SII construye el <b>Registro de Compras y Ventas (RCV)</b> a partir de los Documentos Tributarios Electrónicos (DTE), y desde ahí se <b>propone el F29</b>. El contador valida, complementa y presenta. El auxiliar de honorarios alimenta la línea de retenciones del mismo F29.
+  </div>
+
+  <h3>Ejemplo de Libro de Ventas <span class="tag2026">IVA 2026 = 19%</span></h3>
+  <table>
+    <thead><tr><th>Fecha</th><th>N° Doc</th><th>Cliente</th><th>Neto</th><th>IVA 19%</th><th>Total</th></tr></thead>
+    <tbody>
+      <tr><td>03-03</td><td>F-1001</td><td>Comercial Sur</td><td class="num">200.000</td><td class="num" style="color:var(--iva)">38.000</td><td class="num">238.000</td></tr>
+      <tr><td>15-03</td><td>F-1002</td><td>Retail Andes</td><td class="num">150.000</td><td class="num" style="color:var(--iva)">28.500</td><td class="num">178.500</td></tr>
+    </tbody>
+    <tfoot><tr><td colspan="3">Totales del período</td><td class="num">350.000</td><td class="num" style="color:var(--iva)">66.500</td><td class="num">416.500</td></tr></tfoot>
+  </table>
+  <p style="font-size:.85rem;color:var(--muted)"><b>Verificación:</b> IVA = Neto × 0,19 → 200.000 × 0,19 = 38.000 ✓ · 150.000 × 0,19 = 28.500 ✓. El <b>IVA Débito Fiscal</b> del mes es $66.500.</p>
+</section>
+
+<!-- ================= LIBRO DIARIO ================= -->
+<section id="diario">
+  <div class="kicker">Estación 2</div>
+  <h2>📔 Libro diario</h2>
+  <p>Registra <b>cronológicamente</b> todos los hechos económicos mediante <b>asientos contables</b>, aplicando la partida doble. Es la <mark>fuente primaria formal</mark> de la contabilidad.</p>
+
+  <div class="def">
+    <b>Estructura de un asiento:</b> fecha · cuentas del <span class="pill p-debe">DEBE</span> · cuentas del <span class="pill p-haber">HABER</span> · glosa (explicación). La cuenta que <i>recibe</i> valor va al Debe; la que <i>entrega</i> valor va al Haber.
+  </div>
+
+  <details>
+    <summary>🧠 Regla de cargo y abono (memorízala)</summary>
+    <div class="body">
+      <table>
+        <thead><tr><th>Tipo de cuenta</th><th>Aumenta con</th><th>Disminuye con</th></tr></thead>
+        <tbody>
+          <tr><td><span class="pill p-activo">Activo</span></td><td class="debe">Debe</td><td class="haber">Haber</td></tr>
+          <tr><td><span class="pill p-pasivo">Pasivo</span></td><td class="haber">Haber</td><td class="debe">Debe</td></tr>
+          <tr><td><span class="pill p-pasivo">Patrimonio</span></td><td class="haber">Haber</td><td class="debe">Debe</td></tr>
+          <tr><td><span class="pill p-res">Pérdida / Gasto</span></td><td class="debe">Debe</td><td class="haber">Haber</td></tr>
+          <tr><td><span class="pill p-res">Ganancia / Ingreso</span></td><td class="haber">Haber</td><td class="debe">Debe</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </details>
+
+  <h3>Asiento de una venta al crédito <span class="tag2026">IVA 19%</span></h3>
+  <table>
+    <thead><tr><th>Cuenta</th><th>Debe</th><th>Haber</th></tr></thead>
+    <tbody>
+      <tr><td>Clientes (Activo)</td><td class="debe">238.000</td><td></td></tr>
+      <tr><td>Ventas (Ingreso)</td><td></td><td class="haber">200.000</td></tr>
+      <tr><td>IVA Débito Fiscal (Pasivo)</td><td></td><td class="haber">38.000</td></tr>
+    </tbody>
+    <tfoot><tr><td>Sumas iguales</td><td class="debe">238.000</td><td class="haber">238.000</td></tr></tfoot>
+  </table>
+  <p style="font-size:.85rem;color:var(--muted)"><b>Glosa:</b> por venta según factura F-1001. <b>Verificación partida doble:</b> Debe 238.000 = Haber (200.000 + 38.000) = 238.000 ✓</p>
+
+  <div class="spine">
+    <div class="t">🇨🇱 Contexto chileno — sistema jornalizador vs. centralizador</div>
+    El <b>sistema jornalizador</b> registra cada operación una por una en el diario. El <b>sistema centralizador</b> (muy usado en Chile) agrupa operaciones repetitivas en los libros auxiliares y traspasa al diario un <b>asiento resumen mensual</b> (por ejemplo, todo el libro de ventas en un solo asiento centralizado), reduciendo el volumen de registros.
+  </div>
+</section>
+
+<!-- ================= LIBRO MAYOR ================= -->
+<section id="mayor">
+  <div class="kicker">Estación 3</div>
+  <h2>📖 Libro mayor</h2>
+  <p>Toma cada cuenta del diario y la agrupa en una ficha individual (la clásica <b>"cuenta T"</b>) para conocer su <mark>saldo</mark>. Responde: ¿cuánto tengo finalmente en <i>Caja</i>, en <i>Clientes</i>, en <i>Ventas</i>?</p>
+
+  <div class="grid c2">
+    <div class="card">
+      <h3 style="margin-top:0">Cuenta T — Clientes <span class="pill p-activo">Activo</span></h3>
+      <table>
+        <thead><tr><th>Debe</th><th>Haber</th></tr></thead>
+        <tbody>
+          <tr><td class="debe">238.000</td><td class="haber">100.000</td></tr>
+        </tbody>
+        <tfoot><tr><td class="debe">238.000</td><td class="haber">100.000</td></tr>
+        <tr><td colspan="2" style="text-align:left">Saldo deudor: <b class="debe">138.000</b></td></tr></tfoot>
+      </table>
+      <p style="font-size:.82rem;color:var(--muted)">Activo → saldo <b>deudor</b> (Debe &gt; Haber).</p>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">Cuenta T — IVA Débito <span class="pill p-pasivo">Pasivo</span></h3>
+      <table>
+        <thead><tr><th>Debe</th><th>Haber</th></tr></thead>
+        <tbody>
+          <tr><td class="debe">—</td><td class="haber">38.000</td></tr>
+        </tbody>
+        <tfoot><tr><td class="debe">0</td><td class="haber">38.000</td></tr>
+        <tr><td colspan="2" style="text-align:left">Saldo acreedor: <b class="haber">38.000</b></td></tr></tfoot>
+      </table>
+      <p style="font-size:.82rem;color:var(--muted)">Pasivo → saldo <b>acreedor</b> (Haber &gt; Debe).</p>
+    </div>
+  </div>
+
+  <div class="callout c-ok">
+    <b>Idea clave:</b> el saldo de cada cuenta T del mayor es exactamente lo que después se traslada al <b>balance de comprobación</b>. El mayor es el puente entre el diario y el balance.
+  </div>
+</section>
+
+<!-- ================= BALANCE 8 COLUMNAS ================= -->
+<section id="balance">
+  <div class="kicker">Estación 4</div>
+  <h2>🧮 Balance de 8 columnas (tabulado)</h2>
+  <p>Es la <mark>hoja de trabajo</mark> que reúne todos los saldos del mayor y los ordena progresivamente en <b>cuatro pares de columnas</b>, hasta separar lo que es <b>resultado</b> (pérdidas/ganancias) de lo que es <b>patrimonio</b> (activos/pasivos). Es el gran resumen previo a los Estados Financieros.</p>
+
+  <div class="flow">
+    <div class="step">1️⃣ Sumas<br><small>Debe / Haber</small></div>
+    <div class="arrow">→</div>
+    <div class="step">2️⃣ Saldos<br><small>Deudor / Acreedor</small></div>
+    <div class="arrow">→</div>
+    <div class="step">3️⃣ Resultado<br><small>Pérdida / Ganancia</small></div>
+    <div class="arrow">→</div>
+    <div class="step">4️⃣ Balance General<br><small>Activo / Pasivo</small></div>
+  </div>
+
+  <div class="callout c-info">
+    <b>Cómo clasificar cada cuenta en las últimas 4 columnas:</b><br>
+    · Cuentas de <b>resultado</b> (ingresos y gastos) → columnas de <span class="pill p-res">Pérdidas y Ganancias</span>.<br>
+    · Cuentas de <b>activo, pasivo y patrimonio</b> → columnas de <span class="pill p-activo">Balance General</span>.
+  </div>
+
+  <h3>Ejemplo simplificado <span class="tag2026">valores en CLP</span></h3>
+  <div style="overflow-x:auto">
+  <table>
+    <thead>
+      <tr><th rowspan="2">Cuenta</th><th colspan="2">Sumas</th><th colspan="2">Saldos</th><th colspan="2">Resultado (P y G)</th><th colspan="2">Balance General</th></tr>
+      <tr><th>Debe</th><th>Haber</th><th>Deudor</th><th>Acreedor</th><th>Pérdida</th><th>Ganancia</th><th>Activo</th><th>Pasivo</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Caja</td><td class="num">500.000</td><td class="num">300.000</td><td class="num debe">200.000</td><td></td><td></td><td></td><td class="num" style="color:var(--activo)">200.000</td><td></td></tr>
+      <tr><td>Clientes</td><td class="num">238.000</td><td class="num">100.000</td><td class="num debe">138.000</td><td></td><td></td><td></td><td class="num" style="color:var(--activo)">138.000</td><td></td></tr>
+      <tr><td>Proveedores</td><td class="num">80.000</td><td class="num">200.000</td><td></td><td class="num haber">120.000</td><td></td><td></td><td></td><td class="num" style="color:var(--pasivo)">120.000</td></tr>
+      <tr><td>Capital</td><td></td><td class="num">300.000</td><td></td><td class="num haber">300.000</td><td></td><td></td><td></td><td class="num" style="color:var(--pasivo)">300.000</td></tr>
+      <tr><td>Ventas</td><td></td><td class="num">350.000</td><td></td><td class="num haber">350.000</td><td></td><td class="num" style="color:var(--resultado)">350.000</td><td></td><td></td></tr>
+      <tr><td>Costo de venta</td><td class="num">232.000</td><td></td><td class="num debe">232.000</td><td></td><td class="num" style="color:var(--resultado)">232.000</td><td></td><td></td><td></td></tr>
+    </tbody>
+    <tfoot>
+      <tr><td>Sumas</td><td class="num">1.050.000</td><td class="num">1.250.000</td><td class="num">570.000</td><td class="num">770.000</td><td class="num">232.000</td><td class="num">350.000</td><td class="num">338.000</td><td class="num">420.000</td></tr>
+      <tr><td>Utilidad del ejercicio</td><td></td><td></td><td></td><td></td><td class="num" style="color:var(--ok)">118.000</td><td></td><td></td><td class="num" style="color:var(--ok)">118.000</td></tr>
+      <tr><td>Totales cuadrados</td><td></td><td></td><td></td><td></td><td class="num">350.000</td><td class="num">350.000</td><td class="num">338.000</td><td class="num">420.000... </td></tr>
+    </tfoot>
+  </table>
+  </div>
+  <div class="callout c-warn">
+    <b>Verificación (paso a paso):</b><br>
+    · Ganancia − Pérdida = 350.000 − 232.000 = <b>Utilidad 118.000</b>.<br>
+    · La utilidad se suma al <b>Activo</b> (porque incrementa el patrimonio): columna Pérdida cuadra 350.000 = 350.000 ✓.<br>
+    · Balance General: Activo 338.000 + Utilidad 118.000 = 456.000... espera — <b>ojo aquí</b>: Pasivo = 420.000, y Activo con utilidad = 338.000 + 118.000 = 456.000. La diferencia (36.000) proviene de que este ejemplo omite el <b>IVA Débito</b> del asiento de venta. <mark>Regla de estudio: un balance solo cuadra si TODAS las cuentas del mayor están incluidas.</mark> Nunca omitas cuentas de IVA al armarlo en el examen.
+  </div>
+</section>
+
+<!-- ================= AJUSTES ================= -->
+<section id="ajustes">
+  <div class="kicker">Estación 5</div>
+  <h2>🔧 Ajustes contables (reajustes del ciclo)</h2>
+  <p>Antes de emitir los Estados Financieros hay que <mark>corregir y actualizar</mark> saldos para que reflejen la realidad económica del período. Estos son los ajustes clave del curso.</p>
+
+  <details open>
+    <summary>💰 IVA — determinación del impuesto mensual</summary>
+    <div class="body">
+      <p>El IVA no es ingreso ni gasto: es un <b>impuesto que la empresa recauda por cuenta del Estado</b>. Se determina por diferencia:</p>
+      <div class="def" style="text-align:center;font-size:1.05rem">
+        <span class="pill p-iva">IVA a pagar</span> = IVA Débito Fiscal − IVA Crédito Fiscal
+      </div>
+      <table>
+        <tbody>
+          <tr><td>IVA Débito (ventas)</td><td class="num" style="color:var(--iva)">66.500</td></tr>
+          <tr><td>(−) IVA Crédito (compras)</td><td class="num" style="color:var(--iva)">(38.000)</td></tr>
+        </tbody>
+        <tfoot><tr><td>IVA a pagar en F29</td><td class="num" style="color:var(--ok)">28.500</td></tr></tfoot>
+      </table>
+      <p style="font-size:.85rem;color:var(--muted)"><b>Verificación:</b> 66.500 − 38.000 = 28.500 ✓. Si el crédito supera al débito, se genera un <b>remanente de crédito fiscal</b> que se arrastra al mes siguiente (reajustado por UTM). <span class="tag2026">IVA 2026 = 19%</span></p>
+    </div>
+  </details>
+
+  <details>
+    <summary>🧾 PPM — Pago Provisional Mensual <span class="tag2026">tasa transitoria 2026</span></summary>
+    <div class="body">
+      <p>Es un <b>anticipo del Impuesto a la Renta anual</b>, no un impuesto adicional. Se paga mes a mes en el F29 y luego se descuenta (como crédito) del impuesto final en el F22 de abril.</p>
+      <div class="def" style="text-align:center">
+        <span class="pill p-iva">PPM</span> = Ventas netas (sin IVA) × Tasa
+      </div>
+      <div class="callout c-warn" style="margin:10px 0">
+        <b>Dato 2026 verificado (SII / Ley 21.755):</b> para empresas <b>Pro Pyme General (Art. 14 D N°3)</b>, la tasa normal de <b>0,25%</b> fue rebajada transitoriamente a la <b>mitad → 0,125%</b> para los años tributarios 2026, 2027 y 2028. Esta rebaja es automática y acompaña la baja del Impuesto de Primera Categoría de 25% a 12,5%.
+      </div>
+      <table>
+        <tbody>
+          <tr><td>Ventas netas del mes</td><td class="num">350.000</td></tr>
+          <tr><td>Tasa PPM Pro Pyme 2026</td><td class="num">0,125%</td></tr>
+        </tbody>
+        <tfoot><tr><td>PPM a pagar</td><td class="num" style="color:var(--ok)">438</td></tr></tfoot>
+      </table>
+      <p style="font-size:.85rem;color:var(--muted)"><b>Verificación:</b> 350.000 × 0,00125 = 437,5 ≈ $438 ✓. <b>Error típico:</b> incluir el IVA en la base. La base es <b>siempre neta</b>.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>📅 Pago por adelantado (anticipos / gastos anticipados)</summary>
+    <div class="body">
+      <p>Cuando se paga por un servicio que aún no se consume (arriendo, seguro, suscripción), <b>no es gasto todavía</b>: es un <span class="pill p-activo">Activo</span> ("Gastos anticipados"). Mes a mes se va reconociendo la porción consumida como gasto.</p>
+      <p><b>Ejemplo:</b> se paga $1.200.000 por arriendo anual anticipado.</p>
+      <table>
+        <thead><tr><th>Momento</th><th>Cuenta</th><th>Debe</th><th>Haber</th></tr></thead>
+        <tbody>
+          <tr><td rowspan="2">Al pagar</td><td>Arriendos anticipados (Activo)</td><td class="debe">1.200.000</td><td></td></tr>
+          <tr><td>Banco</td><td></td><td class="haber">1.200.000</td></tr>
+          <tr><td rowspan="2">Ajuste mensual</td><td>Gasto arriendo</td><td class="debe">100.000</td><td></td></tr>
+          <tr><td>Arriendos anticipados (Activo)</td><td></td><td class="haber">100.000</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:.85rem;color:var(--muted)"><b>Verificación:</b> 1.200.000 ÷ 12 meses = $100.000 de gasto por mes ✓. El principio detrás es el <b>devengado</b>: el gasto se reconoce cuando se consume, no cuando se paga.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>🔁 EDI / Corrección monetaria (reajustes por inflación)</summary>
+    <div class="body">
+      <p>Chile es una economía con inflación, por eso la ley tributaria exige <b>corrección monetaria</b>: actualizar el valor de ciertos activos, pasivos y del patrimonio para reflejar la pérdida de poder adquisitivo del peso. El ajuste se registra reconociendo la <b>utilidad o pérdida por corrección monetaria</b>.</p>
+      <div class="callout c-info">
+        <b>Índices que usarás:</b> la <b>UF</b> (reajusta obligaciones), la <b>UTM/UTA</b> (multas, tramos de impuestos, remanentes de IVA) y la <b>variación del IPC</b> (corrección monetaria del capital propio). Todos se publican mensualmente y son la herramienta oficial de reajuste en Chile.
+      </div>
+      <p style="font-size:.85rem;color:var(--muted)"><b>Ejemplo conceptual:</b> si el capital propio inicial es $10.000.000 y el IPC anual fue 4%, la corrección monetaria del capital = $400.000, que aumenta el patrimonio (Haber) y se reconoce como pérdida por corrección monetaria (Debe), afectando el resultado.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>💼 Retención de honorarios (2ª categoría) <span class="tag2026">15,25%</span></summary>
+    <div class="body">
+      <p>Cuando la empresa paga a un profesional que emite <b>boleta de honorarios</b>, debe <b>retener</b> un porcentaje y enterarlo al SII en el F29 (a nombre del prestador).</p>
+      <div class="callout c-warn">
+        <b>Dato 2026 verificado (Ley 21.133):</b> la retención subió a <b>15,25%</b> desde el 1 de enero de 2026 (venía de 14,5%). Sube gradualmente hasta 17% en 2028. <b>Error típico de examen:</b> usar el 17% — ese es la meta futura, no la tasa 2026.
+      </div>
+      <p><b>Ejemplo:</b> honorario bruto $1.000.000.</p>
+      <table>
+        <thead><tr><th>Cuenta</th><th>Debe</th><th>Haber</th></tr></thead>
+        <tbody>
+          <tr><td>Honorarios (Gasto)</td><td class="debe">1.000.000</td><td></td></tr>
+          <tr><td>Retención honorarios por pagar (Pasivo)</td><td></td><td class="haber">152.500</td></tr>
+          <tr><td>Banco (líquido pagado)</td><td></td><td class="haber">847.500</td></tr>
+        </tbody>
+        <tfoot><tr><td>Sumas iguales</td><td class="debe">1.000.000</td><td class="haber">1.000.000</td></tr></tfoot>
+      </table>
+      <p style="font-size:.85rem;color:var(--muted)"><b>Verificación:</b> 1.000.000 × 0,1525 = 152.500 · líquido = 1.000.000 − 152.500 = 847.500 ✓</p>
+    </div>
+  </details>
+</section>
+
+<!-- ================= ESTADOS FINANCIEROS ================= -->
+<section id="eeff">
+  <div class="kicker">Estación 6 · destino final</div>
+  <h2>📊 Estados Financieros</h2>
+  <p>Es el <mark>producto final del sistema</mark>: informes que resumen la situación y el desempeño de la empresa para la <b>toma de decisiones</b> y el cumplimiento legal. En Chile se preparan bajo <b>NIIF/IFRS</b>.</p>
+
+  <div class="grid c2">
+    <div class="card">
+      <h3 style="margin-top:0">🏛️ Estado de Situación Financiera <small>(Balance General)</small></h3>
+      <p style="font-size:.9rem">Foto a una fecha: qué tiene la empresa y cómo lo financió.</p>
+      <div class="def" style="text-align:center"><b>Activo = Pasivo + Patrimonio</b></div>
+      <p style="font-size:.85rem;color:var(--muted)">Activo (bienes y derechos) · Pasivo (obligaciones con terceros) · Patrimonio (aporte de dueños + resultados).</p>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">📈 Estado de Resultados</h3>
+      <p style="font-size:.9rem">Película del período: cómo se generó la utilidad o pérdida.</p>
+      <div class="def" style="text-align:center"><b>Ingresos − Costos − Gastos = Resultado</b></div>
+      <p style="font-size:.85rem;color:var(--muted)">Nace de las columnas de Pérdidas y Ganancias del balance de 8 columnas.</p>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">💵 Estado de Flujo de Efectivo</h3>
+      <p style="font-size:.9rem">Muestra de dónde entró y a dónde salió el efectivo (operación, inversión, financiamiento).</p>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">🔄 Estado de Cambios en el Patrimonio</h3>
+      <p style="font-size:.9rem">Explica cómo varió el patrimonio: aportes, retiros y resultado del ejercicio.</p>
+    </div>
+  </div>
+
+  <div class="callout c-ok">
+    <b>Cierre del hilo conductor:</b> observa que la <b>utilidad del Estado de Resultados</b> pasa al <b>Patrimonio</b> del Estado de Situación Financiera. Los cuatro estados están conectados, tal como lo estuvieron el documento, el auxiliar, el diario, el mayor y el balance. <mark>Todo es un mismo flujo.</mark>
+  </div>
+</section>
+
+<!-- ================= CASO INTEGRADO ================= -->
+<section id="caso">
+  <div class="kicker">Aplicación total</div>
+  <h2>🎯 Caso integrado — el ciclo completo en un mes</h2>
+  <p>La empresa <b>"Andes SpA"</b> (Pro Pyme General) realiza en marzo 2026 estas operaciones. Sigue el flujo completo.</p>
+
+  <div class="grid c3">
+    <div class="def">🛒 <b>Compra</b> mercadería neta $100.000 + IVA.</div>
+    <div class="def">💰 <b>Vende</b> neta $200.000 + IVA al crédito.</div>
+    <div class="def">💼 <b>Paga</b> honorarios contador bruto $400.000.</div>
+  </div>
+
+  <details open>
+    <summary>Paso 1 · Libros auxiliares e IVA</summary>
+    <div class="body">
+      <table>
+        <thead><tr><th>Concepto</th><th>Neto</th><th>IVA 19%</th></tr></thead>
+        <tbody>
+          <tr><td>Compra (Crédito Fiscal)</td><td class="num">100.000</td><td class="num" style="color:var(--iva)">19.000</td></tr>
+          <tr><td>Venta (Débito Fiscal)</td><td class="num">200.000</td><td class="num" style="color:var(--iva)">38.000</td></tr>
+        </tbody>
+        <tfoot><tr><td>IVA a pagar</td><td></td><td class="num" style="color:var(--ok)">19.000</td></tr></tfoot>
+      </table>
+      <p style="font-size:.85rem;color:var(--muted)"><b>Verificación:</b> 38.000 − 19.000 = 19.000 ✓</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Paso 2 · Asientos en el libro diario</summary>
+    <div class="body">
+      <table>
+        <thead><tr><th>Cuenta</th><th>Debe</th><th>Haber</th></tr></thead>
+        <tbody>
+          <tr><td colspan="3" style="color:var(--activo);font-weight:700">— Compra —</td></tr>
+          <tr><td>Mercaderías (Activo)</td><td class="debe">100.000</td><td></td></tr>
+          <tr><td>IVA Crédito Fiscal (Activo)</td><td class="debe">19.000</td><td></td></tr>
+          <tr><td>Proveedores (Pasivo)</td><td></td><td class="haber">119.000</td></tr>
+          <tr><td colspan="3" style="color:var(--activo);font-weight:700">— Venta —</td></tr>
+          <tr><td>Clientes (Activo)</td><td class="debe">238.000</td><td></td></tr>
+          <tr><td>Ventas (Ingreso)</td><td></td><td class="haber">200.000</td></tr>
+          <tr><td>IVA Débito Fiscal (Pasivo)</td><td></td><td class="haber">38.000</td></tr>
+          <tr><td colspan="3" style="color:var(--activo);font-weight:700">— Honorarios —</td></tr>
+          <tr><td>Honorarios (Gasto)</td><td class="debe">400.000</td><td></td></tr>
+          <tr><td>Retención por pagar (Pasivo)</td><td></td><td class="haber">61.000</td></tr>
+          <tr><td>Banco</td><td></td><td class="haber">339.000</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:.85rem;color:var(--muted)"><b>Verificación honorarios 2026:</b> 400.000 × 0,1525 = 61.000 retención · líquido 400.000 − 61.000 = 339.000 ✓. Cada asiento cuadra Debe = Haber ✓</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Paso 3 · Impuestos del mes en el F29</summary>
+    <div class="body">
+      <div class="kpi">
+        <div class="k"><b>$19.000</b><span>IVA a pagar</span></div>
+        <div class="k"><b>$250</b><span>PPM (200.000 × 0,125%)</span></div>
+        <div class="k"><b>$61.000</b><span>Retención honorarios</span></div>
+      </div>
+      <p style="font-size:.85rem;color:var(--muted)"><b>Verificación PPM:</b> base = ventas netas 200.000 × 0,00125 = <b>$250</b> ✓ (tasa transitoria Pro Pyme 2026). Los tres conceptos se declaran en el <b>mismo F29</b>, en líneas distintas, entre el 1 y el 12 del mes siguiente (o hasta el 20 si es facturador electrónico).</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Paso 4 · Del mayor al Estado de Resultados</summary>
+    <div class="body">
+      <table>
+        <thead><tr><th>Estado de Resultados (marzo)</th><th>Monto</th></tr></thead>
+        <tbody>
+          <tr><td>Ventas</td><td class="num" style="color:var(--resultado)">200.000</td></tr>
+          <tr><td>(−) Costo de venta (mercadería)</td><td class="num">(100.000)</td></tr>
+          <tr><td>(−) Honorarios</td><td class="num">(400.000)</td></tr>
+        </tbody>
+        <tfoot><tr><td>Resultado del período</td><td class="num" style="color:var(--iva)">(300.000)</td></tr></tfoot>
+      </table>
+      <p style="font-size:.85rem;color:var(--muted)"><b>Verificación:</b> 200.000 − 100.000 − 400.000 = <b>−300.000 (pérdida)</b> ✓. Nota: ni el IVA ni el PPM ni la retención aparecen en el resultado — no son gasto, son <b>impuestos por cuenta de terceros o anticipos</b>. Este es el error conceptual que más se evalúa.</p>
+    </div>
+  </details>
+</section>
+
+<!-- ================= QUIZ ================= -->
+<section id="quiz">
+  <div class="kicker">Autoevaluación</div>
+  <h2>✅ Pon a prueba lo aprendido</h2>
+  <p style="color:var(--muted)">Toca la alternativa correcta. Recibirás retroalimentación al instante.</p>
+
+  <div class="quiz" data-correct="1">
+    <div class="q">1. ¿Cuál es la tasa de IVA vigente en Chile 2026?</div>
+    <button>10%</button>
+    <button>19%</button>
+    <button>15,25%</button>
+    <div class="fb"></div>
+  </div>
+
+  <div class="quiz" data-correct="2">
+    <div class="q">2. Se paga una boleta de honorarios de $1.000.000 bruto en 2026. ¿Cuánto se retiene?</div>
+    <button>$170.000 (17%)</button>
+    <button>$145.000 (14,5%)</button>
+    <button>$152.500 (15,25%)</button>
+    <div class="fb"></div>
+  </div>
+
+  <div class="quiz" data-correct="0">
+    <div class="q">3. El IVA a pagar del mes se calcula como:</div>
+    <button>Débito Fiscal − Crédito Fiscal</button>
+    <button>Crédito Fiscal − Débito Fiscal</button>
+    <button>Ventas − Compras</button>
+    <div class="fb"></div>
+  </div>
+
+  <div class="quiz" data-correct="2">
+    <div class="q">4. Para una Pro Pyme General, ¿sobre qué base y tasa se calcula el PPM en 2026?</div>
+    <button>Ventas con IVA × 0,25%</button>
+    <button>Ventas netas × 1%</button>
+    <button>Ventas netas × 0,125% (tasa transitoria)</button>
+    <div class="fb"></div>
+  </div>
+
+  <div class="quiz" data-correct="1">
+    <div class="q">5. Un arriendo anual pagado por adelantado, al momento del pago, se registra como:</div>
+    <button>Gasto del período completo</button>
+    <button>Activo (gasto anticipado)</button>
+    <button>Pasivo con el arrendador</button>
+    <div class="fb"></div>
+  </div>
+
+  <div class="quiz" data-correct="0">
+    <div class="q">6. En la partida doble, un aumento de un Activo se registra en el:</div>
+    <button>Debe</button>
+    <button>Haber</button>
+    <button>Ninguno, es una cuenta de orden</button>
+    <div class="fb"></div>
+  </div>
+
+  <div class="card" style="text-align:center">
+    <b>Tu puntaje: <span id="score" style="color:var(--activo)">0</span> / 6</b>
+  </div>
+</section>
+
+<div class="spine" style="border-color:var(--pasivo);background:linear-gradient(90deg,rgba(251,191,36,.1),transparent)">
+  <div class="t" style="color:var(--pasivo)">📌 Machete final — tasas y fórmulas 2026</div>
+  <div class="grid c2" style="margin-top:8px">
+    <div>· <b>IVA</b>: 19% · A pagar = Débito − Crédito</div>
+    <div>· <b>Retención honorarios</b>: 15,25% (Ley 21.133)</div>
+    <div>· <b>PPM Pro Pyme Gral</b>: 0,125% s/ ventas netas (Ley 21.755, transitorio AT 2026-2028)</div>
+    <div>· <b>1ª Categoría Pro Pyme</b>: 12,5% transitorio (normal 25%)</div>
+    <div>· <b>Partida doble</b>: Debe = Haber siempre</div>
+    <div>· <b>Ecuación</b>: Activo = Pasivo + Patrimonio</div>
+    <div>· <b>Reajustes</b>: UF, UTM/UTA, IPC</div>
+    <div>· <b>Declaración</b>: F29 mensual · F22 anual</div>
+  </div>
+</div>
+
+</main>
+
+<footer>
+  Guía de estudio · Contabilidad chilena · Datos tributarios verificados a 2026 (SII, Ley 21.133 y Ley 21.755).<br>
+  Material didáctico de repaso; ante casos reales, valida siempre las tasas vigentes en sii.cl.
+</footer>
+
+<script>
+// Barra de progreso
+const prog=document.getElementById('prog');
+addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  const p=h.scrollTop/(h.scrollHeight-h.clientHeight)*100;
+  prog.style.width=p+'%';
+});
+
+// Aparición de secciones + nav activo
+const secs=[...document.querySelectorAll('section')];
+const links=[...document.querySelectorAll('nav.toc a')];
+const io=new IntersectionObserver(es=>{
+  es.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.classList.add('show');
+      const id=e.target.id;
+      links.forEach(l=>l.classList.toggle('active',l.getAttribute('href')==='#'+id));
+    }
+  });
+},{threshold:.12});
+secs.forEach(s=>io.observe(s));
+
+// Quiz
+let score=0;
+const answered=new Set();
+document.querySelectorAll('.quiz').forEach((q,qi)=>{
+  const correct=+q.dataset.correct;
+  const fb=q.querySelector('.fb');
+  q.querySelectorAll('button').forEach((b,bi)=>{
+    b.addEventListener('click',()=>{
+      if(answered.has(qi))return;
+      answered.add(qi);
+      if(bi===correct){
+        b.classList.add('correct');
+        fb.textContent='✅ ¡Correcto!';
+        fb.style.color='var(--ok)';
+        score++;
+      }else{
+        b.classList.add('wrong');
+        q.querySelectorAll('button')[correct].classList.add('correct');
+        fb.textContent='❌ Revisa: la correcta está marcada en verde.';
+        fb.style.color='var(--iva)';
+      }
+      document.getElementById('score').textContent=score;
+    });
+  });
+});
+</script>
+</body>
+</html>
